@@ -33,12 +33,11 @@ def bilstm(input_ops, n_hidden, sequence_lengths, activation, dropout_rate=0.0):
     # to list of $timesteps order 2 tensors with shape (batch_size * input_len)
     # This is what tf.nn.bidirectional_rnn wants
     input_ops = tf.unstack(value=input_ops, axis=0, num=timesteps)
-    print ('============ ok2 ===========', input_ops) 
     # tf.split turns tensor of shape (x, y, z) into list of x tensors with
     # shape (1, y, z). tf.unstack lets us get rid of the bogus 1st order so the
     # list has now x tensors of shape (y, z), which is what the biLSTM expects
-    input_ops = [tf.unstack(x, name="inputs")[0] for x in input_ops]
-    print ('============ ok3 ===========') 
+    # input_ops = [tf.unstack(x, name="inputs")[0] for x in input_ops]
+
     # make forward and backward cells:
     with tf.variable_scope('forward'):
         cell_fw = tf.nn.rnn_cell.BasicLSTMCell(n_hidden, state_is_tuple=True)
@@ -55,7 +54,8 @@ def bilstm(input_ops, n_hidden, sequence_lengths, activation, dropout_rate=0.0):
     #                               cell_shape[0], cell_shape[1])
     #                           )
     # get layer output op
-    outputs, _, _ = tf.nn.bidirectional_rnn(cell_fw, cell_bw, input_ops,
+
+    outputs, _, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, input_ops,
                                             # initial_state_fw=init_fw,
                                             # initial_state_bw=init_bw,
                                             dtype=tf.float32,

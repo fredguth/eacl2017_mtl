@@ -379,7 +379,7 @@ def main(args=DEFAULT_ARGS):
 
 
 if __name__ == "__main__":
-    print("hey")
+    
     parsed_args = docopt("""
         Usage:
             experiment.py train --task_cfg=<file> --data=<file> --train_dir=<ofile> [options ]
