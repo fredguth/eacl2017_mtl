@@ -330,6 +330,7 @@ def beam_decode(session, model, inputseq, vectorizer, task, args,
 
 
 def main(args=DEFAULT_ARGS):
+    print("readings tasks")
     trdir = args['train_dir']
     task_cfgs = util.read_tasks_config(args['task_cfg'])
     input_mapping = None
@@ -378,7 +379,7 @@ def main(args=DEFAULT_ARGS):
 
 
 if __name__ == "__main__":
-
+    print("hey")
     parsed_args = docopt("""
         Usage:
             experiment.py train --task_cfg=<file> --data=<file> --train_dir=<ofile> [options ]

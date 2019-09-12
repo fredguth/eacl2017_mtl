@@ -27,15 +27,18 @@ def bilstm(input_ops, n_hidden, sequence_lengths, activation, dropout_rate=0.0):
     :param dropout_rate:
     :return:
     """
-    timesteps, batch_size = tf.pack(input_ops).get_shape()[:2]
+   
+    timesteps, batch_size = tf.stack(input_ops).get_shape()[:2]
     # First job: split order 3 tensor (timesteps * batch_size * input_len)
     # to list of $timesteps order 2 tensors with shape (batch_size * input_len)
     # This is what tf.nn.bidirectional_rnn wants
-    input_ops = tf.split(0, timesteps, input_ops)
+    input_ops = tf.unstack(value=input_ops, axis=0, num=timesteps)
+    print ('============ ok2 ===========', input_ops) 
     # tf.split turns tensor of shape (x, y, z) into list of x tensors with
-    # shape (1, y, z). tf.unpack lets us get rid of the bogus 1st order so the
+    # shape (1, y, z). tf.unstack lets us get rid of the bogus 1st order so the
     # list has now x tensors of shape (y, z), which is what the biLSTM expects
-    input_ops = [tf.unpack(x, name="inputs")[0] for x in input_ops]
+    input_ops = [tf.unstack(x, name="inputs")[0] for x in input_ops]
+    print ('============ ok3 ===========') 
     # make forward and backward cells:
     with tf.variable_scope('forward'):
         cell_fw = tf.nn.rnn_cell.BasicLSTMCell(n_hidden, state_is_tuple=True)
@@ -58,7 +61,7 @@ def bilstm(input_ops, n_hidden, sequence_lengths, activation, dropout_rate=0.0):
                                             dtype=tf.float32,
                                             sequence_length=sequence_lengths)
     # apply activation function by each timestep and batch
-    activations = [[activation(tf.unpack(b)[0])
+    activations = [[activation(tf.unstack(b)[0])
                    for b in tf.split(0, batch_size, ts)]
                    for ts in outputs]
     dropouts = activations
@@ -249,8 +252,11 @@ class SeqMtlModel:
         :param batch_size:
         :param embed_size:
         """
+        
         # The input placeholder, expects either IDs (if embed==True) or
         # vectors (pre-trained embeddings or one-hots)
+     
+  
         if embed_size > 0 or pretrained_embeddings is not None:
             self.X_in = tf.placeholder(tf.int32, (timesteps, batch_size),
                                        name="X_in")
@@ -282,7 +288,11 @@ class SeqMtlModel:
                 shape=pretrained_embeddings.shape,
                 initializer=tf.constant_initializer(pretrained_embeddings),
                 trainable=True)  # allow updating embeddings task-specifically
+           
+            
             layer_input = tf.nn.embedding_lookup(emb_matrix, self.X_in)
+            #tf.nn.embedding_lookup(params,ids)
+
         elif embed_size > 0:  # learn embed matrix from indices to embeddings
             print("Creating embedding layer mapping inputs to embeddings "
                   "of length {}.".format(embed_size))
@@ -292,6 +302,7 @@ class SeqMtlModel:
                 initializer=xavier_init(input_size, embed_size))
             layer_input = tf.nn.embedding_lookup(emb_matrix, self.X_in)
         else:  # use provided vectors (pre-trained embeddings or one-hots)
+         
             layer_input = self.X_in
 
         # # # INTERMEDIATE LAYERS # # #
@@ -300,14 +311,16 @@ class SeqMtlModel:
         for i in range(num_layers):
             activation = ACTIVATIONS.get(actfunc)
             with tf.variable_scope("layer{}".format(i), reuse=None):
+                
                 outputs, _, dropouts = bilstm(layer_input, hid_dims,
                                               self.sequence_lengths,
                                               activation, dropout_rate)
+               
             self.layer_outputs.append(outputs)
             # dropouts from previous layer are input to next layer
             layer_input = dropouts
             # layer_input = outputs
-
+        
         # # # TASK OUTPUTS # # #
         # Register tasks at layers
         for task_id, task in tasks.items():

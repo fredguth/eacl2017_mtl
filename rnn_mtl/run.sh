@@ -17,4 +17,4 @@ echo $traindir
 mkdir -p $traindir 2> /dev/null
 echo "Starting training..." >> $traindir/stdout.log 
 date >> $traindir/stdout.log 
-nohup ~/anaconda3/bin/python src/experiment.py train --data cfg/data.cfg --train_dir $traindir --embeddings $vecs --task_cfg cfg/task_$tasks.cfg --timesteps $timesteps --optmzr $optimizer --n_layers $layers --iters $iters --learning_rate $learning_rate --dropout $dropout --save_interval 10000 >> $traindir/stdout.log 2>&1 &
+python src/experiment.py train --data cfg/data.cfg --train_dir $traindir --embeddings $vecs --task_cfg cfg/task_$tasks.cfg --timesteps $timesteps --optmzr $optimizer --n_layers $layers --iters $iters --learning_rate $learning_rate --dropout $dropout --save_interval 10000

@@ -1,0 +1,7 @@
+rnn_mtl/data/*
+rnn_mtl/logs/*
+rnn_mtl/markup*/*
+**/logs
+**/.ipynb_checkpoints
+**/__pycache__/
+.vscode
